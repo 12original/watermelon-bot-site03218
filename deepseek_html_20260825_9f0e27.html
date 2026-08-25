@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Watermelon 🍉</title>
+    <meta name="description" content="Watermelon — тепла українська Discord-спільнота. Правила, бот і підтримка." />
+    <meta name="theme-color" content="#0c1410" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        /* ── reset & vars ── */
+        :root {
+            --bg: #0c1410;
+            --surface: #141e18;
+            --elevated: #1b2820;
+            --fg: #f3eee4;
+            --muted: #9aada0;
+            --subtle: #6d8074;
+            --accent: #e0544a;
+            --accent-fg: #fff8f4;
+            --leaf: #3a7a48;
+            --pith: #d7e3b8;
+            --seed: #161310;
+            --border: color-mix(in oklab, var(--fg) 12%, transparent);
+            --border-strong: color-mix(in oklab, var(--fg) 22%, transparent);
+            --display: "Fraunces", "Times New Roman", serif;
+            --sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+            --mono: "IBM Plex Mono", ui-monospace, monospace;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* ── animated background ── */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background-image:
+                radial-gradient(circle at 18% 12%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 28%),
+                radial-gradient(circle at 88% 0%, color-mix(in oklab, var(--leaf) 18%, transparent), transparent 32%),
+                radial-gradient(circle, color-mix(in oklab, var(--fg) 9%, transparent) 0.7px, transparent 1.1px);
+            background-size: auto, auto, 22px 22px;
+            animation: bgPulse 12s ease-in-out infinite alternate;
+        }
+        @keyframes bgPulse {
+            0% {
+                opacity: 0.7;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+        }
+
+        /* ── floating watermelons ── */
+        .floating-melons {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .floating-melons span {
+            position: absolute;
+            font-size: 2.4rem;
+            opacity: 0.12;
+            animation: floatMelon linear infinite;
+            user-select: none;
+        }
+        @keyframes floatMelon {
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(0.6);
+                opacity: 0;
+            }
+            8% {
+                opacity: 0.12;
+            }
+            92% {
+                opacity: 0.12;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* ── cursor follower ── */
+        .melon-cursor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 2rem;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.25s ease, transform 0.08s ease;
+            filter: drop-shadow(0 4px 12px rgba(224, 84, 74, 0.35));
+        }
+        .melon-cursor.visible {
+            opacity: 0.7;
+        }
+
+        /* ── scroll reveal ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── typography & basics ── */
+        a {
+            color: inherit;
+        }
+        button,
+        a.btn {
+            font-family: inherit;
+        }
+        h1,
+        h2,
+        h3 {
+            text-wrap: balance;
+            margin: 0;
+        }
+        p {
+            text-wrap: pretty;
+        }
+        .wrap {
+            width: min(72rem, calc(100% - 2rem));
+            margin-inline: auto;
+        }
+
+        /* ── header ── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            border-bottom: 1px solid var(--border);
+            background: color-mix(in oklab, var(--bg) 88%, transparent);
+            backdrop-filter: blur(12px);
+        }
+        .bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 64px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: 0;
+            color: var(--fg);
+            cursor: pointer;
+            padding: 0;
+            min-height: 44px;
+            transition: transform 0.2s ease;
+        }
+        .brand:hover {
+            transform: scale(1.03);
+        }
+        .brand span {
+            font-family: var(--display);
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+        .brand .watermelon-icon {
+            transition: transform 0.3s ease;
+        }
+        .brand:hover .watermelon-icon {
+            transform: rotate(-12deg) scale(1.08);
+        }
+
+        nav {
+            display: none;
+            gap: 4px;
+            margin-left: 8px;
+        }
+        nav button {
+            height: 44px;
+            padding: 0 12px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+        }
+        nav button.active,
+        nav button:hover {
+            background: var(--elevated);
+            color: var(--fg);
+        }
+        nav button:active {
+            transform: scale(0.94);
+        }
+        .spacer {
+            margin-left: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 8px;
+            border: 0;
+            background: var(--accent);
+            color: var(--accent-fg);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px color-mix(in oklab, var(--accent) 35%, transparent);
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn.outline {
+            background: transparent;
+            color: var(--fg);
+            border: 1px solid var(--border-strong);
+            box-shadow: none;
+        }
+        .btn.outline:hover {
+            background: var(--elevated);
+            box-shadow: 0 4px 16px color-mix(in oklab, var(--fg) 10%, transparent);
+        }
+        .btn.ghost {
+            background: transparent;
+            color: var(--fg);
+            box-shadow: none;
+        }
+        .btn.ghost:hover {
+            background: var(--elevated);
+            box-shadow: none;
+        }
+        .btn.secondary {
+            background: var(--elevated);
+            color: var(--fg);
+            box-shadow: none;
+        }
+        .btn.secondary:hover {
+            background: color-mix(in oklab, var(--elevated) 80%, var(--fg));
+            box-shadow: 0 4px 16px color-mix(in oklab, var(--fg) 8%, transparent);
+        }
+        .btn.lg {
+            min-height: 48px;
+            padding: 0 22px;
+            font-size: 1rem;
+        }
+
+        /* ripple effect */
+        .btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: color-mix(in oklab, var(--accent-fg) 30%, transparent);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .menu-btn {
+            display: inline-flex;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            color: var(--fg);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .menu-btn:hover {
+            background: var(--elevated);
+        }
+
+        /* ── hero ── */
+        .hero {
+            display: grid;
+            gap: 40px;
+            padding: 56px 0 72px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .eyebrow {
+            font-size: 0.75rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .eyebrow::before {
+            content: "🍉 ";
+            letter-spacing: 0.1em;
+        }
+
+        h1 {
+            font-family: var(--display);
+            font-size: clamp(2.4rem, 1.4rem + 4vw, 4.25rem);
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            background: linear-gradient(135deg, var(--fg) 60%, var(--pith));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .lead {
+            margin-top: 20px;
+            max-width: 28rem;
+            font-size: 1.125rem;
+            color: var(--muted);
+        }
+        .cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 32px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 99px;
+            background: var(--leaf);
+            display: inline-block;
+            animation: pulseDot 1.8s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px color-mix(in oklab, var(--fg) 6%, transparent);
+        }
+
+        .server {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .server img {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .server:hover img {
+            transform: rotate(-6deg) scale(1.04);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .stat {
+            background: var(--elevated);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: background 0.2s;
+        }
+        .stat:hover {
+            background: color-mix(in oklab, var(--elevated) 80%, var(--fg));
+        }
+        .stat dt {
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--subtle);
+        }
+        .stat dd {
+            margin: 4px 0 0;
+            font-family: var(--display);
+            font-size: 1.6rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cmd {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .cmd:hover {
+            border-color: var(--leaf);
+            box-shadow: 0 0 20px color-mix(in oklab, var(--leaf) 12%, transparent);
+        }
+        .cmd code {
+            font-family: var(--mono);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 99px;
+            background: color-mix(in oklab, var(--leaf) 20%, transparent);
+            color: var(--pith);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 2px 10px;
+            transition: transform 0.2s;
+        }
+        .badge:hover {
+            transform: scale(1.05);
+        }
+        .badge.new {
+            background: var(--accent);
+            color: var(--accent-fg);
+            animation: glowBadge 1.6s ease-in-out infinite;
+        }
+        @keyframes glowBadge {
+            0%,
+            100% {
+                box-shadow: 0 0 4px color-mix(in oklab, var(--accent) 30%, transparent);
+            }
+            50% {
+                box-shadow: 0 0 20px color-mix(in oklab, var(--accent) 50%, transparent);
+            }
+        }
+
+        /* ── panels ── */
+        .panel {
+            border-top: 1px solid var(--border);
+            padding: 56px 0 72px;
+            position: relative;
+            z-index: 2;
+        }
+        .grid3 {
+            display: grid;
+            gap: 16px;
+        }
+        .tile {
+            text-align: left;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            cursor: pointer;
+            color: inherit;
+            transition: transform 0.25s ease, border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .tile::after {
+            content: "🍉";
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            font-size: 2.2rem;
+            opacity: 0.06;
+            transition: opacity 0.3s, transform 0.4s;
+        }
+        .tile:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: var(--border-strong);
+            box-shadow: 0 12px 36px color-mix(in oklab, var(--fg) 6%, transparent);
+        }
+        .tile:hover::after {
+            opacity: 0.18;
+            transform: rotate(12deg) scale(1.1);
+        }
+        .tile .kicker {
+            font-size: 0.75rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--subtle);
+        }
+        .tile h2 {
+            font-family: var(--display);
+            font-size: 1.35rem;
+            margin-top: 8px;
+        }
+        .tile p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ── rules ── */
+        .rules {
+            display: grid;
+            gap: 16px;
+        }
+        .rule-item {
+            display: flex;
+            gap: 12px;
+            background: color-mix(in oklab, var(--elevated) 70%, transparent);
+            border-radius: 8px;
+            padding: 12px 12px 12px 16px;
+            box-shadow: inset 3px 0 0 var(--leaf);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .rule-item:hover {
+            background: color-mix(in oklab, var(--elevated) 90%, transparent);
+            transform: translateX(4px);
+        }
+        .num {
+            font-family: var(--display);
+            color: var(--accent);
+            width: 1.4rem;
+            font-size: 1.15rem;
+        }
+
+        .note {
+            border: 1px solid var(--border);
+            background: var(--elevated);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-top: 16px;
+            transition: border-color 0.3s;
+        }
+        .note:hover {
+            border-color: var(--border-strong);
+        }
+
+        /* ── fun ── */
+        .fun {
+            display: grid;
+            gap: 16px;
+        }
+        .fun .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .fun .card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 36px color-mix(in oklab, var(--fg) 6%, transparent);
+        }
+
+        /* ── support ── */
+        .problems {
+            display: grid;
+            gap: 12px;
+        }
+        .problem {
+            text-align: left;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            color: inherit;
+            transition: border-color 0.25s, background 0.25s, transform 0.2s;
+        }
+        .problem:hover {
+            border-color: var(--border-strong);
+            transform: translateX(4px);
+        }
+        .problem.selected {
+            border-color: var(--accent);
+            background: var(--elevated);
+            box-shadow: 0 0 20px color-mix(in oklab, var(--accent) 15%, transparent);
+        }
+        .problem strong {
+            display: block;
+        }
+        .problem span {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        input,
+        textarea {
+            width: 100%;
+            min-height: 44px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--elevated);
+            color: var(--fg);
+            padding: 10px 12px;
+            font: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent);
+        }
+        textarea {
+            min-height: 8rem;
+            resize: vertical;
+        }
+
+        /* ── footer ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 32px 0;
+            color: var(--subtle);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+        .foot {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .foot a {
+            transition: color 0.2s;
+        }
+        .foot a:hover {
+            color: var(--fg);
+        }
+
+        /* ── drawer ── */
+        .drawer {
+            position: fixed;
+            inset: 0;
+            background: color-mix(in oklab, var(--seed) 70%, transparent);
+            display: none;
+            z-index: 50;
+            animation: fadeIn 0.25s ease;
+        }
+        .drawer.open {
+            display: block;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        .drawer-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: min(20rem, 100%);
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            padding: 24px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+        .drawer-panel button.nav {
+            display: block;
+            width: 100%;
+            text-align: left;
+            height: 48px;
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 0 12px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .drawer-panel button.nav:hover {
+            background: var(--elevated);
+            color: var(--fg);
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: var(--elevated);
+            border: 1px solid var(--border);
+            color: var(--fg);
+            padding: 10px 16px;
+            border-radius: 10px;
+            display: none;
+            z-index: 60;
+            animation: toastPop 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+        @keyframes toastPop {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.9) translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) translateY(0);
+            }
+        }
+
+        pre {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 12px;
+            overflow: auto;
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            color: var(--muted);
+        }
+
+        /* ── ticket ── */
+        #ticket-wrap .card {
+            border-color: var(--leaf);
+        }
+
+        /* ── responsive ── */
+        @media (min-width: 768px) {
+            nav {
+                display: flex;
+            }
+            .menu-btn {
+                display: none;
+            }
+            .hero {
+                grid-template-columns: 1.1fr 0.9fr;
+                padding-top: 80px;
+            }
+            .grid3,
+            .fun,
+            .rules,
+            .problems {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grid3 {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .foot {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+        @media (min-width: 1024px) {
+            .problems {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ── watermelon counter (fun) ── */
+        .melon-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--elevated);
+            border-radius: 99px;
+            padding: 4px 16px 4px 8px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            user-select: none;
+        }
+        .melon-counter:hover {
+            background: color-mix(in oklab, var(--elevated) 80%, var(--fg));
+            transform: scale(1.04);
+        }
+        .melon-counter .count {
+            font-family: var(--display);
+            font-size: 1.3rem;
+            min-width: 1.8rem;
+            text-align: center;
+        }
+
+        /* ── confetti burst ── */
+        .confetti-piece {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confettiFall 1.2s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0.2);
+            }
+        }
+
+        /* ── watermelon split effect ── */
+        .split-melon {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9997;
+            font-size: 4rem;
+            animation: splitBoom 0.7s ease-out forwards;
+        }
+        @keyframes splitBoom {
+            0% {
+                transform: scale(0.4) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.6) rotate(40deg);
+                opacity: 0;
+            }
+        }
+        .split-melon.half {
+            animation: splitHalf 0.7s ease-out forwards;
+        }
+        @keyframes splitHalf {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- floating watermelons -->
+    <div class="floating-melons" id="floatingMelons"></div>
+
+    <!-- cursor follower -->
+    <div class="melon-cursor" id="melonCursor">🍉</div>
+
+    <!-- confetti container -->
+    <div id="confettiContainer"></div>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="wrap bar">
+            <button class="brand" data-tab="home" type="button">
+                <svg class="watermelon-icon" width="36" height="36" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M8 40c0-17.673 14.327-32 32-32v7.2C25.3 15.2 15.2 25.3 15.2 40H8Z" fill="#3a7a48"/>
+                    <path d="M15.2 40c0-13.7 9.1-23.8 22.8-24.8V20C27.4 21 20 28.4 20 40h-4.8Z" fill="#d7e3b8"/>
+                    <path d="M20 40c0-11.046 8.954-20 20-20v20H20Z" fill="#e0544a"/>
+                    <ellipse cx="28.5" cy="33" rx="1.5" ry="2.4" transform="rotate(-28 28.5 33)" fill="#161310"/>
+                    <ellipse cx="33.8" cy="28.2" rx="1.4" ry="2.2" transform="rotate(-28 33.8 28.2)" fill="#161310"/>
+                    <ellipse cx="34.6" cy="35.6" rx="1.3" ry="2.1" transform="rotate(-28 34.6 35.6)" fill="#161310"/>
+                </svg>
+                <span>Watermelon</span>
+            </button>
+            <nav aria-label="Розділи">
+                <button type="button" data-tab="home" class="active">Головна</button>
+                <button type="button" data-tab="rules">Правила</button>
+                <button type="button" data-tab="fun">Цікавості</button>
+                <button type="button" data-tab="support">Підтримка</button>
+            </nav>
+            <div class="spacer"></div>
+            <a class="btn" href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">Discord</a>
+            <button class="menu-btn" type="button" id="open-menu" aria-label="Меню">☰</button>
+        </div>
+    </header>
+
+    <!-- ===== DRAWER ===== -->
+    <div class="drawer" id="drawer">
+        <div class="drawer-panel">
+            <p style="font-family:var(--display);font-size:1.25rem;margin:0 0 16px">🍉 Меню</p>
+            <button class="nav" type="button" data-tab="home">Головна</button>
+            <button class="nav" type="button" data-tab="rules">Правила</button>
+            <button class="nav" type="button" data-tab="fun">Цікавості</button>
+            <button class="nav" type="button" data-tab="support">Підтримка</button>
+            <a class="btn" style="width:100%;margin-top:16px" href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">Зайти в Discord</a>
+        </div>
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <main>
+        <!-- HERO -->
+        <section class="wrap hero">
+            <div class="reveal">
+                <p class="eyebrow">Discord-спільнота · Україна</p>
+                <h1>Watermelon</h1>
+                <p class="lead">Тепла українська Discord-спільнота. Поважаємо одне одного, граємо в міні-ігри з ботом і тримаємо сервер живим цілодобово.</p>
+                <div class="cta">
+                    <a class="btn lg" href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">Зайти на сервер</a>
+                    <button class="btn outline lg" type="button" data-tab="rules">Читати правила</button>
+                </div>
+                <div class="meta">
+                    <span><span class="dot"></span> <span id="online">12</span> онлайн</span>
+                    <span><span id="members">19</span> учасників</span>
+                    <span id="gname">Арбузіки</span>
+                    <span class="melon-counter" id="melonCounter" title="Клацни, щоб додати 🍉">
+                        🍉 <span class="count" id="melonCount">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card reveal" style="transition-delay:0.15s;">
+                <div class="server">
+                    <img src="./server-icon.png" alt="" width="72" height="72" />
+                    <div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                            <h2 style="font-family:var(--display);font-size:1.35rem;font-weight:500" id="gname2">Арбузіки</h2>
+                            <span class="badge">24/7</span>
+                        </div>
+                        <p style="margin:6px 0 0;color:var(--muted);font-size:0.9rem">Сервер Watermelon у Discord. Бот з міні-іграми вже не спить.</p>
+                    </div>
+                </div>
+                <dl class="stats">
+                    <div class="stat"><dt>Онлайн</dt><dd id="online2">12</dd></div>
+                    <div class="stat"><dt>Учасники</dt><dd id="members2">19</dd></div>
+                </dl>
+                <div class="cmd">
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--subtle)">Команда бота</div>
+                        <code>!Кавун list</code>
+                    </div>
+                    <button class="btn outline" type="button" id="copy-cmd" style="width:44px;padding:0">⧉</button>
+                </div>
+                <p style="margin:16px 0 0;color:var(--muted);font-size:0.9rem">🍉 Нове: бот працює 24/7</p>
+            </div>
+        </section>
+
+        <!-- PANELS -->
+        <section class="panel" id="panel">
+            <div class="wrap">
+
+                <!-- HOME -->
+                <div id="view-home" class="grid3">
+                    <button class="tile reveal" type="button" data-tab="rules">
+                        <p class="kicker">01</p>
+                        <h2>Правила</h2>
+                        <p>Вісім коротких пунктів. Повага, без NSFW, без спаму, Soundpad лише з дозволу.</p>
+                    </button>
+                    <button class="tile reveal" type="button" data-tab="fun" style="transition-delay:0.08s;">
+                        <p class="kicker">02</p>
+                        <h2>Цікавості</h2>
+                        <p>Бот з міні-іграми, команда !Кавун list і робота 24/7.</p>
+                    </button>
+                    <button class="tile reveal" type="button" data-tab="support" style="transition-delay:0.16s;">
+                        <p class="kicker">03</p>
+                        <h2>Підтримка</h2>
+                        <p>Оберіть проблему — зберемо заявку для адміністратора.</p>
+                    </button>
+                </div>
+
+                <!-- RULES -->
+                <div id="view-rules" class="hidden">
+                    <div class="reveal">
+                        <h2 style="font-family:var(--display);font-size:1.8rem">🍉 Правила сервера</h2>
+                        <p style="color:var(--muted);max-width:40rem">Шановні учасники сервера, ви зараз читаєте правила цього сервера. Коротко, ясно і без дрібного шрифту.</p>
+                    </div>
+                    <div class="rules" style="margin-top:24px">
+                        <section class="card reveal">
+                            <p class="kicker">Спілкування</p>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">1</span><span>Поважайте один одного.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">2</span><span>Не використовуйте нецензурну лексику.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">3</span><span>Будьте дружніми, не сваріться.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">4</span><span>Спілкуйтеся культурно.</span></div>
+                        </section>
+                        <section class="card reveal" style="transition-delay:0.1s;">
+                            <p class="kicker">Контент і поведінка</p>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">5</span><span>Не надсилайте NSFW гіфки, фото чи інший подібний контент.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">6</span><span>Не спамте.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">7</span><span>Не називайте нікого жирним.</span></div>
+                            <div class="rule-item" style="margin-top:12px"><span class="num">8</span><span>Не вмикайте Soundpad без дозволу адміністрації сервера.</span></div>
+                        </section>
+                    </div>
+                    <aside class="note reveal">
+                        <p>Якщо ви дотримуєтеся правил — це чудово. Якщо ж помітимо порушення, буде видано мут на <strong>5 хвилин</strong> або на <strong>1 годину</strong>.</p>
+                        <p style="font-family:var(--display);font-size:1.2rem;font-style:italic">Дякую за нерозуміння.</p>
+                        <p style="color:var(--subtle);font-size:0.9rem">Правила можуть доповнюватися з часом.</p>
+                    </aside>
+                </div>
+
+                <!-- FUN -->
+                <div id="view-fun" class="hidden">
+                    <div class="reveal">
+                        <h2 style="font-family:var(--display);font-size:1.8rem">🍉 Цікавості</h2>
+                        <p style="color:var(--muted);max-width:40rem">Коротко про те, чим живе Watermelon: атмосфера, бот і те, що варто спробувати в перший вечір.</p>
+                    </div>
+                    <div class="fun" style="margin-top:24px">
+                        <article class="card reveal">
+                            <h3>Добрий і цікавий</h3>
+                            <p style="color:var(--muted);font-size:0.9rem">Наш сервер зібраний для живого спілкування. Тут не змагаються, хто голосніший — тут просто добре сидіти.</p>
+                        </article>
+                        <article class="card reveal" style="transition-delay:0.08s;">
+                            <h3>Бот з міні-іграми</h3>
+                            <p style="color:var(--muted);font-size:0.9rem">На сервері є бот. У нього міні-ігри та команди. Щоб побачити все, зайдіть у Discord і напишіть команду нижче.</p>
+                        </article>
+                        <article class="card reveal" style="transition-delay:0.16s;">
+                            <div style="display:flex;gap:8px;align-items:center"><h3>Бот тепер 24/7</h3><span class="badge new">New</span></div>
+                            <p style="color:var(--muted);font-size:0.9rem">Нове: бот більше не вимикається на ніч. Заходьте будь-коли — міні-ігри на місці.</p>
+                        </article>
+                        <article class="card reveal" style="transition-delay:0.24s;">
+                            <h3>Команда списку</h3>
+                            <p style="color:var(--muted);font-size:0.9rem">Напишіть у чат сервера команду бота, щоб відкрити повний список можливостей.</p>
+                        </article>
+                    </div>
+                    <div class="note" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-top:24px;">
+                        <div>
+                            <p class="kicker">У чаті сервера</p>
+                            <p style="font-family:var(--mono);font-size:1.15rem;margin:6px 0">!Кавун list</p>
+                            <p style="color:var(--muted);font-size:0.9rem;margin:0">Після цього бот покаже весь список міні-ігор і команд.</p>
+                        </div>
+                        <a class="btn" href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">Відкрити Discord</a>
+                    </div>
+                </div>
+
+                <!-- SUPPORT -->
+                <div id="view-support" class="hidden">
+                    <div id="form-wrap">
+                        <div class="reveal">
+                            <h2 style="font-family:var(--display);font-size:1.8rem">🍉 Підтримка</h2>
+                            <p style="color:var(--muted);max-width:40rem">Оберіть проблему, коротко опишіть її — і ми зберемо повідомлення для адміністратора hahaha_22857. Далі відкриється Discord, щоб надіслати заявку в особисті.</p>
+                        </div>
+                        <form id="support-form" style="margin-top:28px">
+                            <p style="font-weight:500;margin:0 0 12px">Що сталося?</p>
+                            <div class="problems" id="problems">
+                                <button class="problem" type="button" data-id="rules"><strong>Порушення правил</strong><br /><span>Хтось ображає, спамить або лається</span></button>
+                                <button class="problem" type="button" data-id="bot"><strong>Бот і міні-ігри</strong><br /><span>Команди не працюють або є ідея</span></button>
+                                <button class="problem" type="button" data-id="mute"><strong>Мут або покарання</strong><br /><span>Здається, мут поставили несправедливо</span></button>
+                                <button class="problem" type="button" data-id="nsfw"><strong>NSFW або токсичність</strong><br /><span>Небажаний контент чи образи</span></button>
+                                <button class="problem" type="button" data-id="idea"><strong>Ідея для сервера</strong><br /><span>Пропозиція, івент, покращення</span></button>
+                                <button class="problem" type="button" data-id="other"><strong>Інше</strong><br /><span>Щось, чого немає в списку</span></button>
+                            </div>
+                            <div style="margin-top:20px">
+                                <label for="nick">Ваш нік у Discord</label>
+                                <input id="nick" required placeholder="наприклад, hahaha_22857" />
+                            </div>
+                            <div style="margin-top:16px">
+                                <label for="details">Опис</label>
+                                <textarea id="details" required minlength="8" placeholder="Що сталося, коли, і кого це стосується."></textarea>
+                            </div>
+                            <div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+                                <button class="btn lg" type="submit">🍉 Зібрати заявку</button>
+                                <span style="color:var(--subtle);font-size:0.9rem">Після цього текст скопіюється, і ви зможете надіслати його в Discord.</span>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="ticket-wrap" class="hidden">
+                        <div class="reveal">
+                            <h2 style="font-family:var(--display);font-size:1.8rem">🍉 Заявку зібрано</h2>
+                            <p style="color:var(--muted);max-width:40rem">Сайт не може сам написати в особисті. Скопійований текст надішліть адміністратору <strong>hahaha_22857</strong> у Discord — тоді заявка точно дійде.</p>
+                        </div>
+                        <div class="card" style="margin-top:20px">
+                            <p class="kicker">Тикет</p>
+                            <p id="ticket-id" style="font-family:var(--mono);font-size:1.15rem"></p>
+                            <pre id="ticket-text"></pre>
+                            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">
+                                <button class="btn" type="button" id="copy-ticket">📋 Копіювати текст</button>
+                                <a class="btn outline" href="https://discord.com/users/1379198931673547024" target="_blank" rel="noreferrer">✉️ Написати hahaha_22857</a>
+                                <a class="btn secondary" href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">🍉 Відкрити сервер</a>
+                            </div>
+                        </div>
+                        <button class="btn ghost" type="button" id="new-ticket" style="margin-top:12px">↩️ Нова заявка</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="wrap foot">
+            <p>🍉 Watermelon · Арбузіки</p>
+            <p>Адмін: hahaha_22857 · <a href="https://discord.gg/R9AxvsZt4D" target="_blank" rel="noreferrer">discord.gg/R9AxvsZt4D</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        (function() {
+            "use strict";
+
+            // ── config ──
+            const INVITE = "https://discord.gg/R9AxvsZt4D";
+            const PROBLEMS = {
+                rules: "Порушення правил",
+                bot: "Бот і міні-ігри",
+                mute: "Мут або покарання",
+                nsfw: "NSFW або токсичність",
+                idea: "Ідея для сервера",
+                other: "Інше"
+            };
+            let tab = "home";
+            let problem = "";
+            let lastTicket = "";
+            let melonCount = 0;
+
+            // ── DOM refs ──
+            const toastEl = document.getElementById("toast");
+            const drawer = document.getElementById("drawer");
+            const melonCounter = document.getElementById("melonCounter");
+            const melonCountEl = document.getElementById("melonCount");
+            const cursorEl = document.getElementById("melonCursor");
+
+            // ── toast ──
+            function toast(msg) {
+                toastEl.textContent = msg;
+                toastEl.style.display = "block";
+                clearTimeout(toastEl._hide);
+                toastEl._hide = setTimeout(() => { toastEl.style.display = "none"; }, 2000);
+            }
+
+            // ── tab switching ──
+            function setTab(id) {
+                tab = id;
+                ["home", "rules", "fun", "support"].forEach((name) => {
+                    const el = document.getElementById("view-" + name);
+                    if (el) el.classList.toggle("hidden", name !== id);
+                });
+                document.querySelectorAll("nav button, .brand, [data-tab]").forEach((btn) => {
+                    if (btn.matches("nav button")) {
+                        btn.classList.toggle("active", btn.dataset.tab === id);
+                    }
+                });
+                history.replaceState(null, "", id === "home" ? "#" : "#" + id);
+                drawer.classList.remove("open");
+                if (id !== "home") {
+                    document.getElementById("panel").scrollIntoView({ behavior: "smooth", block: "start" });
+                } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                // re-trigger reveal after tab change
+                setTimeout(() => observeReveals(), 100);
+            }
+
+            document.querySelectorAll("[data-tab]").forEach((el) => {
+                el.addEventListener("click", () => setTab(el.dataset.tab));
+            });
+            document.getElementById("open-menu").addEventListener("click", () => {
+                drawer.classList.add("open");
+            });
+            drawer.addEventListener("click", (e) => {
+                if (e.target.id === "drawer") drawer.classList.remove("open");
+            });
+
+            // ── copy cmd ──
+            document.getElementById("copy-cmd").addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText("!Кавун list");
+                    toast("🍉 Команду скопійовано");
+                } catch {
+                    toast("Не вдалося скопіювати");
+                }
+            });
+
+            // ── problem selection ──
+            document.querySelectorAll(".problem").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    problem = btn.dataset.id;
+                    document.querySelectorAll(".problem").forEach((b) => b.classList.toggle("selected", b === btn));
+                });
+            });
+
+            // ── support form ──
+            document.getElementById("support-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const nick = document.getElementById("nick").value.trim();
+                const details = document.getElementById("details").value.trim();
+                if (!nick || !problem || details.length < 8) {
+                    toast("🍉 Заповніть нік, тему і короткий опис.");
+                    return;
+                }
+                const id = "WM-" + String(1000 + Math.floor(Math.random() * 9000));
+                lastTicket = [
+                    "🍉 Заявка з сайту Watermelon",
+                    "Тикет: " + id,
+                    "Від: " + nick,
+                    "Тема: " + PROBLEMS[problem],
+                    "",
+                    details,
+                    "",
+                    "— надіслано через watermelon.site"
+                ].join("\n");
+                document.getElementById("ticket-id").textContent = id;
+                document.getElementById("ticket-text").textContent = lastTicket;
+                document.getElementById("form-wrap").classList.add("hidden");
+                document.getElementById("ticket-wrap").classList.remove("hidden");
+                try {
+                    await navigator.clipboard.writeText(lastTicket);
+                    toast("🍉 Текст заявки скопійовано");
+                } catch { /* ignore */ }
+                // confetti on ticket created
+                spawnConfetti(24);
+            });
+
+            document.getElementById("copy-ticket").addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(lastTicket);
+                    toast("🍉 Скопійовано");
+                } catch {
+                    toast("Не вдалося скопіювати");
+                }
+            });
+            document.getElementById("new-ticket").addEventListener("click", () => {
+                document.getElementById("form-wrap").classList.remove("hidden");
+                document.getElementById("ticket-wrap").classList.add("hidden");
+                document.getElementById("details").value = "";
+                document.querySelectorAll(".problem").forEach((b) => b.classList.remove("selected"));
+                problem = "";
+            });
+
+            // ── hash routing ──
+            const hash = location.hash.replace("#", "");
+            if (["home", "rules", "fun", "support"].includes(hash)) setTab(hash);
+
+            // ── floating watermelons ──
+            (function spawnFloatingMelons() {
+                const container = document.getElementById("floatingMelons");
+                const emojis = ["🍉", "🍉", "🍉", "🍉", "🍉"];
+                for (let i = 0; i < 18; i++) {
+                    const span = document.createElement("span");
+                    span.textContent = emojis[i % emojis.length];
+                    span.style.left = (Math.random() * 96 + 2) + "%";
+                    span.style.fontSize = (1.2 + Math.random() * 2.4) + "rem";
+                    span.style.animationDuration = (14 + Math.random() * 22) + "s";
+                    span.style.animationDelay = (Math.random() * 20) + "s";
+                    container.appendChild(span);
+                }
+            })();
+
+            // ── cursor follower ──
+            let cursorVisible = false;
+            let cursorTimeout;
+
+            document.addEventListener("mousemove", (e) => {
+                cursorEl.style.left = e.clientX + "px";
+                cursorEl.style.top = e.clientY + "px";
+                if (!cursorVisible) {
+                    cursorVisible = true;
+                    cursorEl.classList.add("visible");
+                }
+                clearTimeout(cursorTimeout);
+                cursorTimeout = setTimeout(() => {
+                    cursorVisible = false;
+                    cursorEl.classList.remove("visible");
+                }, 2000);
+            });
+
+            // ── melon counter ──
+            melonCounter.addEventListener("click", (e) => {
+                melonCount++;
+                melonCountEl.textContent = melonCount;
+                toast("🍉 +1 кавун! (" + melonCount + ")");
+                spawnConfetti(10);
+                // spawn a split melon at click pos
+                const rect = melonCounter.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                spawnSplitMelon(x, y);
+            });
+
+            // ── confetti ──
+            function spawnConfetti(count = 20) {
+                const container = document.getElementById("confettiContainer");
+                const colors = ["#e0544a", "#3a7a48", "#d7e3b8", "#f3eee4", "#e8b84a", "#e07a4a"];
+                for (let i = 0; i < count; i++) {
+                    const piece = document.createElement("div");
+                    piece.className = "confetti-piece";
+                    const w = 6 + Math.random() * 8;
+                    const h = 6 + Math.random() * 8;
+                    piece.style.width = w + "px";
+                    piece.style.height = h + "px";
+                    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.left = (window.innerWidth / 2 + (Math.random() - 0.5) * 300) + "px";
+                    piece.style.top = (window.innerHeight / 2 + (Math.random() - 0.5) * 200) + "px";
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist = 120 + Math.random() * 280;
+                    piece.style.setProperty("--tx", Math.cos(angle) * dist + "px");
+                    piece.style.setProperty("--ty", Math.sin(angle) * dist - 200 + "px");
+                    piece.style.animationDuration = (0.8 + Math.random() * 0.8) + "s";
+                    piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+                    container.appendChild(piece);
+                    setTimeout(() => piece.remove(), 1800);
+                }
+            }
+
+            // ── split melon effect ──
+            function spawnSplitMelon(x, y) {
+                const container = document.body;
+                // main burst
+                const main = document.createElement("div");
+                main.className = "split-melon";
+                main.textContent = "🍉";
+                main.style.left = x + "px";
+                main.style.top = y + "px";
+                main.style.fontSize = (3 + Math.random() * 2) + "rem";
+                container.appendChild(main);
+                setTimeout(() => main.remove(), 800);
+
+                // two halves flying apart
+                for (let i = 0; i < 2; i++) {
+                    const half = document.createElement("div");
+                    half.className = "split-melon half";
+                    half.textContent = "🍉";
+                    half.style.left = x + "px";
+                    half.style.top = y + "px";
+                    half.style.fontSize = (2 + Math.random() * 1.5) + "rem";
+                    const angle = (i === 0 ? -1 : 1) * (0.4 + Math.random() * 0.6);
+                    const dist = 80 + Math.random() * 120;
+                    half.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+                    half.style.setProperty("--dy", Math.sin(angle) * dist - 60 + "px");
+                    half.style.setProperty("--rot", (i === 0 ? -1 : 1) * (120 + Math.random() * 120) + "deg");
+                    half.style.animationDuration = (0.6 + Math.random() * 0.4) + "s";
+                    container.appendChild(half);
+                    setTimeout(() => half.remove(), 1200);
+                }
+                // extra confetti
+                spawnConfetti(8);
+            }
+
+            // also split on card clicks (fun)
+            document.querySelectorAll(".card, .tile, .problem").forEach((el) => {
+                el.addEventListener("click", (e) => {
+                    if (e.target.closest("button") || e.target.closest("a")) return;
+                    const rect = el.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    spawnSplitMelon(x, y);
+                });
+            });
+
+            // ── reveal on scroll ──
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: "0px 0px -20px 0px" });
+
+            function observeReveals() {
+                document.querySelectorAll(".reveal:not(.visible)").forEach((el) => {
+                    revealObserver.observe(el);
+                });
+            }
+            observeReveals();
+
+            // also observe dynamically added reveals after tab switch
+            const panelObserver = new MutationObserver(() => {
+                observeReveals();
+            });
+            panelObserver.observe(document.getElementById("panel"), { childList: true, subtree: true });
+
+            // ── ripple effect on buttons ──
+            document.querySelectorAll(".btn").forEach((btn) => {
+                btn.addEventListener("click", function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const ripple = document.createElement("span");
+                    ripple.className = "ripple";
+                    const size = Math.max(rect.width, rect.height) * 0.6;
+                    ripple.style.width = ripple.style.height = size + "px";
+                    ripple.style.left = (x - size / 2) + "px";
+                    ripple.style.top = (y - size / 2) + "px";
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 700);
+                });
+            });
+
+            // ── extra: click anywhere for a small confetti burst ──
+            document.addEventListener("click", (e) => {
+                if (e.target.closest("button") || e.target.closest("a") || e.target.closest(".melon-counter")) return;
+                if (Math.random() < 0.08) {
+                    spawnConfetti(6);
+                }
+            });
+
+            // ── simulate online count fluctuation (fun) ──
+            setInterval(() => {
+                const online = document.getElementById("online");
+                const online2 = document.getElementById("online2");
+                const val = 8 + Math.floor(Math.random() * 10);
+                online.textContent = val;
+                online2.textContent = val;
+            }, 8000);
+
+            console.log("🍉 Watermelon — тепла українська спільнота!");
+        })();
+    </script>
+</body>
+</html>
